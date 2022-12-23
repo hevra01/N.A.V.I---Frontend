@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import '../API/api.dart';
 
@@ -11,10 +12,18 @@ class Navigation extends StatefulWidget {
 }
 
 class _NavigationState extends State<Navigation> {
+  // to capture frames
+  final ImagePicker _picker = ImagePicker();
+
   @override
   Widget build(BuildContext context) {
-    // this is returned by the login widget after the customer logs in
-    final Map scene = ModalRoute.of(context)!.settings.arguments as Map;
+    // this variable will stay as true as long as the user doesn't wish to stop
+    // navigation.
+    bool continue_giving_description = false;
+
+    // this will be updated based on the return value of server that is performing
+    // scene description.
+    List<List> scene = [[], [], []];
 
     return Scaffold(
         appBar: AppBar(
@@ -27,6 +36,28 @@ class _NavigationState extends State<Navigation> {
         body: Center(
           child: Column(
             children: [
+              ElevatedButton(
+                onPressed: () async {
+                  setState(() {
+                    continue_giving_description = true;
+                  });
+                  // continue making API calls to make object detection, distance
+                  // and angle estimation
+                  while (continue_giving_description == true) {
+                    final XFile? photo =
+                        await _picker.pickImage(source: ImageSource.camera);
+                    File photofile = File(photo!.path);
+                    scene = handle_scene_description(photofile);
+                  }
+                },
+                child: const Text('Start Navigation',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    )),
+              ),
+              const SizedBox(height: 100),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: const [
@@ -53,7 +84,14 @@ class _NavigationState extends State<Navigation> {
               ),
               const SizedBox(height: 100),
               ElevatedButton(
-                onPressed: () => handle_stop_navigation(),
+                // set the state of continue_giving_description to false
+                // so that we don't make API calls anymore unless the user wants to
+                // start again.
+                onPressed: () {
+                  setState(() {
+                    continue_giving_description = false;
+                  });
+                },
                 child: const Text('Stop Navigation',
                     style: TextStyle(
                       fontSize: 20,
@@ -69,11 +107,12 @@ class _NavigationState extends State<Navigation> {
   // this function will make an API call to ask the
   // server to stop the navigation that includes object detection,
   // distance and position calculation.
-  handle_stop_navigation() async {
-    // make an API request
-    var response =
-        // we need to send an api token as well because only authenticated
-        // users should be able to make this call
-        await CallApi().getData('predict');
+  handle_scene_description(img_file) async {
+    List<List> scene;
+
+    scene = await CallApi().postData(
+      img_file,
+      'predict',
+    );
   }
 }
