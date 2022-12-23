@@ -25,6 +25,8 @@ class _NavigationState extends State<Navigation> {
     // scene description.
     List<List> scene = [[], [], []];
 
+    final ImagePicker _picker = ImagePicker();
+
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Colors.yellow,
@@ -34,7 +36,35 @@ class _NavigationState extends State<Navigation> {
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             )),
         body: Center(
-          child: Column(
+            child: Column(children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: const [
+              //SizedBox(height: 30),
+              Text('Object',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.purple,
+                  )),
+              const SizedBox(width: 100),
+              Text('Distance',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.purple,
+                  )),
+              const SizedBox(width: 100),
+              Text('Position',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.purple,
+                  )),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
                 onPressed: () async {
@@ -57,34 +87,6 @@ class _NavigationState extends State<Navigation> {
                       color: Colors.white,
                     )),
               ),
-              const SizedBox(height: 100),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: const [
-                  //SizedBox(height: 30),
-                  Text('Object',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.purple,
-                      )),
-                  const SizedBox(width: 100),
-                  Text('Distance',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.purple,
-                      )),
-                  const SizedBox(width: 100),
-                  Text('Position',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.purple,
-                      )),
-                ],
-              ),
-              const SizedBox(height: 100),
               ElevatedButton(
                 // set the state of continue_giving_description to false
                 // so that we don't make API calls anymore unless the user wants to
@@ -103,7 +105,7 @@ class _NavigationState extends State<Navigation> {
               ),
             ],
           ),
-        ));
+        ])));
   }
 
   // this function will make an API call to ask the
