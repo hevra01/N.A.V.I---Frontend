@@ -38,7 +38,7 @@ dependencies:
   camera: ^0.10.1
   image_picker: ^0.8.6
   dio: ^4.0.6
-  path: ^1.8.3
+  path: 
   file_picker: ^5.2.4
 
 dev_dependencies:

@@ -1,8 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import '../API/api.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dio/dio.dart' as eos;
+import 'package:path/path.dart';
+import 'package:http/http.dart' as http;
 
 class Navigation extends StatefulWidget {
   const Navigation({Key? key}) : super(key: key);
@@ -74,10 +79,7 @@ class _NavigationState extends State<Navigation> {
                   // continue making API calls to make object detection, distance
                   // and angle estimation
                   while (continue_giving_description == true) {
-                    final XFile? photo =
-                        await _picker.pickImage(source: ImageSource.camera);
-                    File photofile = File(photo!.path);
-                    scene = handle_scene_description(photofile);
+                    scene = handle_scene_description();
                   }
                 },
                 child: const Text('Start Navigation',
@@ -111,12 +113,24 @@ class _NavigationState extends State<Navigation> {
   // this function will make an API call to ask the
   // server to stop the navigation that includes object detection,
   // distance and position calculation.
-  handle_scene_description(img_file) async {
+  handle_scene_description() async {
     List<List> scene;
 
-    scene = await CallApi().postData(
-      img_file,
-      'predict',
-    );
+    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    File photofile = File(photo!.path);
+
+    var stream = http.ByteStream(photofile.openRead());
+    stream.cast();
+    var length = await photofile.length();
+
+    // If you want to send images/videos/files to the server, use MultipartRequest
+    var request = http.MultipartRequest(
+        'POST', Uri.parse('http://10.0.2.2:8080/predict'));
+
+    var multiport = new http.MultipartFile('photofile', stream, length);
+
+    // adding the image file
+    request.files.add(multiport);
+    return scene = (await request.send()) as List<List>;
   }
 }

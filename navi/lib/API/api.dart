@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/src/form_data.dart';
 import 'package:http/http.dart' as http;
 
 // This class groups up several request types together such as post and get requests.
