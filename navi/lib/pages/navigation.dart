@@ -47,14 +47,14 @@ class _NavigationState extends State<Navigation> {
                     fontWeight: FontWeight.w900,
                     color: Colors.purple,
                   )),
-              const SizedBox(width: 100),
+              //const SizedBox(width: 100),
               Text('Distance',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Colors.purple,
                   )),
-              const SizedBox(width: 100),
+              //const SizedBox(width: 100),
               Text('Position',
                   style: TextStyle(
                     fontSize: 20,

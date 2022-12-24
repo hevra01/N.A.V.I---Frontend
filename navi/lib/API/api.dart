@@ -22,7 +22,7 @@ class CallApi {
   postData(data, apiUrl) async {
     var fullUrlString = url + apiUrl;
     Uri fullUrl = Uri.parse(fullUrlString); // convert the string to url
-    return http.post(fullUrl, body: jsonEncode(data), headers: setHeaders());
+    return http.post(fullUrl, body: data, headers: setHeaders());
   }
 
   // get requests will be handled with this function
