@@ -78,9 +78,10 @@ class _NavigationState extends State<Navigation> {
                   });
                   // continue making API calls to make object detection, distance
                   // and angle estimation
-                  while (continue_giving_description == true) {
-                    scene = handle_scene_description();
-                  }
+
+                  do {
+                    await handle_scene_description();
+                  } while (continue_giving_description);
                 },
                 child: const Text('Start Navigation',
                     style: TextStyle(
@@ -114,23 +115,32 @@ class _NavigationState extends State<Navigation> {
   // server to stop the navigation that includes object detection,
   // distance and position calculation.
   handle_scene_description() async {
-    List<List> scene;
+    //var yes = ImageSource.camera;
+    //final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    //File photofile = File(photo!.path);
 
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-    File photofile = File(photo!.path);
-
-    var stream = http.ByteStream(photofile.openRead());
-    stream.cast();
-    var length = await photofile.length();
+    //var stream = http.ByteStream(photofile.openRead());
+    //stream.cast();
+    //var length = await photofile.length();
 
     // If you want to send images/videos/files to the server, use MultipartRequest
-    var request = http.MultipartRequest(
-        'POST', Uri.parse('http://10.0.2.2:8080/predict'));
+    //var request = http.MultipartRequest(
+    //    'POST', Uri.parse('http://10.0.2.2:8080/predict'));
 
-    var multiport = new http.MultipartFile('photofile', stream, length);
+    //var multiport = new http.MultipartFile('photofile', stream, length);
+    try {
+      var response2 = await http.get(Uri.parse('http://10.0.2.2:5000/predict'));
+      print(response2.body);
+    } catch (e) {
+      print(e);
+    }
 
     // adding the image file
-    request.files.add(multiport);
-    return scene = (await request.send()) as List<List>;
+    //request.files.add(multiport);
+    //var response = await request.send();
+    print("yes");
+    //setState(() {
+    //  scene = response;
+    //});
   }
 }

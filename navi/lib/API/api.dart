@@ -8,7 +8,7 @@ class CallApi {
   // the local machine is the emulator since we are in that
   // currently but we are trying to access
   // to our laptop as the machine.
-  final String url = 'http://10.0.2.2:8080/api/user/';
+  final String url = 'http://127.0.0.1:5000/';
 
   // used to set the headers
   setHeaders() => {
@@ -30,6 +30,15 @@ class CallApi {
   getData(apiUrl) async {
     var fullUrlString = url + apiUrl;
     Uri fullUrl = Uri.parse(fullUrlString); // convert the string to url
-    return await http.get(fullUrl, headers: setHeaders());
+    try {
+      var response = await http.get(fullUrl);
+      print(response);
+      var body = json.decode(response.body);
+      print(response);
+    } catch (e) {
+      print(e);
+    }
+
+    //return response;
   }
 }
