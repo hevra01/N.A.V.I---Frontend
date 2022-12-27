@@ -63,7 +63,7 @@ class _NavigationState extends State<Navigation> {
 
     // this will be updated based on the return value of server that is performing
     // scene description.
-    List<List> scene = [[], [], []];
+    List objects_with_positions = [[], [], []];
 
     return Scaffold(
         appBar: AppBar(
@@ -101,6 +101,22 @@ class _NavigationState extends State<Navigation> {
                   )),
             ],
           ),
+          const SizedBox(height: 25),
+          // FIX ME
+          Text("hecc"),
+          // to display all the detected objects, distances, and positions
+          for (var i = 0; i < (objects_with_positions[0]).length; i++)
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Text(objects_with_positions[0][i],
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  )),
+              Text(objects_with_positions[1][i]),
+              Text(objects_with_positions[2][i])
+            ]),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -115,10 +131,11 @@ class _NavigationState extends State<Navigation> {
                   while (continue_giving_description) {
                     // make API requests every 5 seconds
                     await Future.delayed(const Duration(seconds: 5), () async {
-                      await handle_scene_description();
+                      objects_with_positions = await handle_scene_description();
                     });
                   }
                 },
+                // the server will start getting api requests to perform object detection, distance and position calculation.
                 child: const Text('Start Navigation',
                     style: TextStyle(
                       fontSize: 20,
@@ -135,6 +152,7 @@ class _NavigationState extends State<Navigation> {
                     continue_giving_description = false;
                   });
                 },
+                // the server will stop getting api requests
                 child: const Text('Stop Navigation',
                     style: TextStyle(
                       fontSize: 20,
@@ -176,10 +194,9 @@ class _NavigationState extends State<Navigation> {
 
     // converting the streamed response to a casual response
     var response = await http.Response.fromStream(streamedResponse);
-    var objects_with_positions =
-        (json.decode(response.body))["objects_with_positions"];
-    print(objects_with_positions);
-    print(objects_with_positions[1]);
-    print(objects_with_positions[3]);
+    var response_decoded = json.decode(response.body);
+    var listmy = response_decoded["objects_with_positions"][0];
+    var len = response_decoded["objects_with_positions"][0].length;
+    return response_decoded["objects_with_positions"];
   }
 }
