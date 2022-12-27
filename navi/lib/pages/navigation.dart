@@ -76,12 +76,15 @@ class _NavigationState extends State<Navigation> {
                   setState(() {
                     continue_giving_description = true;
                   });
+
                   // continue making API calls to make object detection, distance
                   // and angle estimation
-
-                  do {
-                    await handle_scene_description();
-                  } while (continue_giving_description);
+                  while (continue_giving_description) {
+                    // make API requests every 5 seconds
+                    await Future.delayed(const Duration(seconds: 5), () async {
+                      await handle_scene_description();
+                    });
+                  }
                 },
                 child: const Text('Start Navigation',
                     style: TextStyle(
@@ -125,15 +128,12 @@ class _NavigationState extends State<Navigation> {
 
     // If you want to send images/videos/files to the server, use MultipartRequest
     //var request = http.MultipartRequest(
-    //    'POST', Uri.parse('http://10.0.2.2:8080/predict'));
+    //    'POST', Uri.parse('http://10.0.2.2:5000/predict'));
 
     //var multiport = new http.MultipartFile('photofile', stream, length);
-    try {
-      var response2 = await http.get(Uri.parse('http://10.0.2.2:5000/predict'));
-      print(response2.body);
-    } catch (e) {
-      print(e);
-    }
+
+    var response2 = await CallApi().getData('predict');
+    print(response2);
 
     // adding the image file
     //request.files.add(multiport);
