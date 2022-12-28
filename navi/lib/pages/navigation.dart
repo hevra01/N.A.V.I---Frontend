@@ -26,6 +26,8 @@ class _NavigationState extends State<Navigation> {
   final ImagePicker _picker = ImagePicker();
   CameraController? controller;
   File? pictureFile;
+  late bool continue_giving_description;
+  late List objects_with_positions;
 
   // initstate runs everytime the widget gets created
   // but it doesn't run when it is updated.
@@ -46,6 +48,14 @@ class _NavigationState extends State<Navigation> {
 
       setState(() {});
     });
+
+    // this variable will stay as true as long as the user doesn't wish to stop
+    // navigation. however, initially, it is false until the user clicks start navigation button
+    continue_giving_description = false;
+
+    // this will be updated based on the return value of server that is performing
+    // scene description.
+    objects_with_positions = [[], [], []];
   }
 
   // when the widget dies, this function is called.
@@ -57,14 +67,6 @@ class _NavigationState extends State<Navigation> {
 
   @override
   Widget build(BuildContext context) {
-    // this variable will stay as true as long as the user doesn't wish to stop
-    // navigation.
-    bool continue_giving_description = false;
-
-    // this will be updated based on the return value of server that is performing
-    // scene description.
-    List objects_with_positions = [[], [], []];
-
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Colors.yellow,
@@ -102,26 +104,37 @@ class _NavigationState extends State<Navigation> {
             ],
           ),
           const SizedBox(height: 25),
-          // FIX ME
-          Text("hecc"),
+
           // to display all the detected objects, distances, and positions
           for (var i = 0; i < (objects_with_positions[0]).length; i++)
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               Text(objects_with_positions[0][i],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
                   )),
-              Text(objects_with_positions[1][i]),
-              Text(objects_with_positions[2][i])
+              Text((objects_with_positions[1][i].toStringAsFixed(2)),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  )),
+              Text((objects_with_positions[2][i]).toString(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ))
             ]),
-
+          const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
                 onPressed: () async {
+                  var scene;
+
                   setState(() {
                     continue_giving_description = true;
                   });
@@ -130,8 +143,14 @@ class _NavigationState extends State<Navigation> {
                   // and angle estimation
                   while (continue_giving_description) {
                     // make API requests every 5 seconds
-                    await Future.delayed(const Duration(seconds: 5), () async {
-                      objects_with_positions = await handle_scene_description();
+                    await Future.delayed(const Duration(seconds: 1), () async {
+                      scene = await handle_scene_description();
+                    });
+
+                    // use setState so that the widget gets rerendered to display
+                    // the objects, distances, and angles
+                    setState(() {
+                      objects_with_positions = scene;
                     });
                   }
                 },
