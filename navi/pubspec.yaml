@@ -40,6 +40,7 @@ dependencies:
   dio: ^4.0.6
   path: 
   file_picker: ^5.2.4
+  smooth_page_indicator: ^1.0.0+2
 
 dev_dependencies:
   flutter_test:
