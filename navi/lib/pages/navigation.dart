@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:navi/main.dart';
+import 'package:path/path.dart' as Path;
 
 class Navigation extends StatefulWidget {
   const Navigation({Key? key}) : super(key: key);
@@ -139,11 +140,30 @@ class _NavigationState extends State<Navigation> {
                       scene = await handle_scene_description();
                     });
 
-                    // use setState so that the widget gets rerendered to display
-                    // the objects, distances, and angles
-                    setState(() {
-                      objects_with_positions = scene;
-                    });
+                    // check if the server responded without an error
+                    if (scene[0][0] != -222) {
+                      // use setState so that the widget gets rerendered to display
+                      // the objects, distances, and angles
+                      setState(() {
+                        objects_with_positions = scene;
+                      });
+                    } else {
+                      // show an alert to the user since the server is irresponsive and can't detect objects
+                      showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('Alert'),
+                          content: const Text(
+                              'Currently the app is unable to detect objects. Consequently, please take cautions accordingly?'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'OK'),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   }
                 },
                 // the server will start getting api requests to perform object detection, distance and position calculation.
@@ -200,14 +220,23 @@ class _NavigationState extends State<Navigation> {
 
     // adding the image file
     request.files.add(multipart);
-    // send the api request for object detection
-    var streamedResponse = await request.send();
 
-    // converting the streamed response to a casual response
-    var response = await http.Response.fromStream(streamedResponse);
-    var response_decoded = json.decode(response.body);
-    var listmy = response_decoded["objects_with_positions"][0];
-    var len = response_decoded["objects_with_positions"][0].length;
-    return response_decoded["objects_with_positions"];
+    // taking into consideration that the server may go down or face a problem
+    // let the user know about it accordingly.
+    try {
+      // send the api request for object detection
+      var streamedResponse =
+          await request.send().timeout(const Duration(seconds: 10));
+      // converting the streamed response to a casual response
+      var response = await http.Response.fromStream(streamedResponse);
+      var response_decoded = json.decode(response.body);
+      return response_decoded["objects_with_positions"];
+    } catch (_) {
+      return [
+        [-222],
+        [],
+        []
+      ];
+    }
   }
 }
