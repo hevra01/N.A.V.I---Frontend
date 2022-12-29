@@ -154,10 +154,16 @@ class _NavigationState extends State<Navigation> {
                         builder: (BuildContext context) => AlertDialog(
                           title: const Text('Alert'),
                           content: const Text(
-                              'Currently the app is unable to detect objects. Consequently, please take cautions accordingly?'),
+                              'Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.'),
                           actions: <Widget>[
                             TextButton(
-                              onPressed: () => Navigator.pop(context, 'OK'),
+                              onPressed: () async {
+                                Navigator.pop(context, 'OK');
+
+                                setState(() {
+                                  continue_giving_description = false;
+                                });
+                              },
                               child: const Text('OK'),
                             ),
                           ],
