@@ -1,17 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:navi/main.dart';
-import 'package:navi/main.dart';
-import '../API/api.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:dio/dio.dart' as eos;
-import 'package:path/path.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:navi/main.dart';
 
 class Navigation extends StatefulWidget {

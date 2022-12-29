@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-//import 'package:my_first_flutter_project/pages/home.dart';
 import 'package:navi/pages/navigation.dart';
+import 'package:navi/pages/onBoarding.dart';
 
 List<CameraDescription>? cameras;
 Future<void> main() async {
@@ -11,7 +11,8 @@ Future<void> main() async {
   runApp(MaterialApp(
     initialRoute: '/',
     routes: {
-      '/': (context) => Navigation(),
+      '/': (context) => const OnBoardingScreen(),
+      '/navigate': (context) => const Navigation(),
     },
   ));
 }
