@@ -19,6 +19,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
     super.dispose();
   }
 
+  // a custom widget
   Widget buildPage({
     required Color color,
     required String urlImage,
@@ -90,7 +91,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   urlImage: 'assets/intro7.jpeg',
                   title: "How to Use?",
                   subtitle:
-                      'When using the app, visually impaired users simply need to wear their phones on specific parts of their bodies and allow the app to access the video.'),
+                      'When using the app, the user needs to hold their phones on chest level and allow the app to access the camera.'),
             ],
           ),
         ),
@@ -104,7 +105,9 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     minimumSize: const Size.fromHeight(70)),
                 child:
                     const Text('Get Started', style: TextStyle(fontSize: 24)),
-                onPressed: () async {},
+                onPressed: () async {
+                  Navigator.popAndPushNamed(context, '/navigate');
+                },
               )
             : Container(
                 padding: const EdgeInsets.symmetric(horizontal: 15),

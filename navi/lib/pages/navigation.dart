@@ -69,10 +69,10 @@ class _NavigationState extends State<Navigation> {
             )),
         body: Center(
             child: Column(children: [
+          const SizedBox(height: 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: const [
-              //SizedBox(height: 30),
               Text('Object',
                   style: TextStyle(
                     fontSize: 20,
