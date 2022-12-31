@@ -108,6 +108,10 @@ class _NavigationState extends State<Navigation> {
                 // start again.
                 onPressed: () {
                   continue_giving_description = false;
+                  // clean up the screen
+                  setState(() {
+                    objects_with_positions = [[], [], []];
+                  });
                   // let the user know that the navigation has been stopped.
                   var message = "Navigation has been stopped!";
                   alertPopUp(message);
