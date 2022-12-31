@@ -16,12 +16,15 @@ class Navigation extends StatefulWidget {
 
 class _NavigationState extends State<Navigation> {
   // to capture frames
-  final ImagePicker _picker = ImagePicker();
   CameraController? controller;
   File? pictureFile;
+
+  // will be set to true when the user clicks start navigation button
   late bool continue_giving_description;
+
+  // after the server detects objects, distances, and positions, it will be
+  // assigned to this variable
   late List objects_with_positions;
-  var test;
 
   // initstate runs everytime the widget gets created
   // but it doesn't run when it is updated.
@@ -30,7 +33,8 @@ class _NavigationState extends State<Navigation> {
     super.initState();
     // initialize the camera controller
     controller = CameraController(
-      cameras![0], // get the first available
+      // get the first available camera
+      cameras![0],
       ResolutionPreset.max,
     );
 
@@ -46,7 +50,7 @@ class _NavigationState extends State<Navigation> {
     // this variable will stay as true as long as the user doesn't wish to stop
     // navigation. however, initially, it is false until the user clicks start navigation button
     continue_giving_description = false;
-    test = 0;
+
     // this will be updated based on the return value of server that is performing
     // scene description.
     objects_with_positions = [[], [], []];
@@ -55,6 +59,7 @@ class _NavigationState extends State<Navigation> {
   // when the widget dies, this function is called.
   @override
   void dispose() {
+    // dispose the camera when the widget gets removed from the tree
     controller?.dispose();
     super.dispose();
   }
@@ -74,6 +79,7 @@ class _NavigationState extends State<Navigation> {
           const SizedBox(height: 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // headers for listing detected objects, distances, and positions
             children: const [
               Text('Object',
                   style: TextStyle(
@@ -81,14 +87,12 @@ class _NavigationState extends State<Navigation> {
                     fontWeight: FontWeight.w900,
                     color: Colors.purple,
                   )),
-              //const SizedBox(width: 100),
               Text('Distance',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Colors.purple,
                   )),
-              //const SizedBox(width: 100),
               Text('Position',
                   style: TextStyle(
                     fontSize: 20,
@@ -99,7 +103,7 @@ class _NavigationState extends State<Navigation> {
           ),
           const SizedBox(height: 25),
 
-          // to display all the detected objects, distances, and positions
+          // to display all the detected objects, distances, and positions by the server (ml model)
           for (var i = 0; i < (objects_with_positions[0]).length; i++)
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               Text(objects_with_positions[0][i],
@@ -125,61 +129,13 @@ class _NavigationState extends State<Navigation> {
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // holds the start navigation and stop navigation buttons
             children: [
               ElevatedButton(
-                onPressed: () async {
-                  var scene;
-
-                  //setState(() {
-                  continue_giving_description = true;
-                  //});
-
-                  // continue making API calls to make object detection, distance
-                  // and angle estimation
-                  while (continue_giving_description) {
-                    // make API requests every 5 seconds
-                    await Future.delayed(const Duration(seconds: 1), () async {
-                      scene = await handle_scene_description();
-                    });
-
-                    // no objects detected and no server error
-                    if (scene[0].isEmpty) {
-                      continue;
-                    }
-                    // objects detected and no server error
-                    else if (scene[0][0] != -222) {
-                      // use setState so that the widget gets rerendered to display
-                      // the objects, distances, and angles
-                      setState(() {
-                        objects_with_positions = scene;
-                      });
-                      // server error
-                    } else {
-                      // show an alert to the user since the server is irresponsive and can't detect objects
-                      showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text('Alert'),
-                          content: const Text(
-                              'Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.'),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () async {
-                                Navigator.pop(context, 'OK');
-
-                                setState(() {
-                                  continue_giving_description = false;
-                                });
-                              },
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  }
-                },
-                // the server will start getting api requests to perform object detection, distance and position calculation.
+                // api requests will continue to be sent to the server hosting
+                // an ml model to perform object detection and will continue
+                // until the user wishes to stop by clicking stop navigation button
+                onPressed: startNavigation_button_pressed,
                 child: const Text('Start Navigation',
                     style: TextStyle(
                       fontSize: 20,
@@ -192,9 +148,7 @@ class _NavigationState extends State<Navigation> {
                 // so that we don't make API calls anymore unless the user wants to
                 // start again.
                 onPressed: () {
-                  setState(() {
-                    continue_giving_description = false;
-                  });
+                  continue_giving_description = false;
                 },
                 // the server will stop getting api requests
                 child: const Text('Stop Navigation',
@@ -206,16 +160,67 @@ class _NavigationState extends State<Navigation> {
               ),
             ],
           ),
+          const SizedBox(height: 25),
         ])));
   }
 
-  // this function will make an API call to ask the
-  // server to stop the navigation that includes object detection,
-  // distance and position calculation.
+  // handle the program execution after the start navigation button is pressed
+  startNavigation_button_pressed() async {
+    var scene;
+    continue_giving_description = true;
+
+    // continue making API calls to make object detection, distance
+    // and angle estimation
+    while (continue_giving_description) {
+      // make API requests every 5 seconds
+      await Future.delayed(const Duration(seconds: 1), () async {
+        scene = await handle_scene_description();
+      });
+
+      // no objects detected and no server error
+      if (scene[0].isEmpty) {
+        continue;
+      }
+      // objects detected and no server error
+      else if (scene[0][0] != -222) {
+        // use setState so that the widget gets rerendered to display
+        // the objects, distances, and angles
+        setState(() {
+          objects_with_positions = scene;
+        });
+        // server error
+      } else {
+        // show an alert to the user since the server is irresponsive and can't detect objects
+        showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Alert'),
+            content: const Text(
+                'Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context, 'OK');
+
+                  setState(() {
+                    continue_giving_description = false;
+                  });
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  // this function will take a picture and make an API call to the server hosting
+  // an ml model that makes object detection distance and position calculation.
   handle_scene_description() async {
     // the return value is a XFile
     final picture = await controller?.takePicture();
-    var stream, length;
+    var stream;
 
     // get the requirments ready to create a multipart file to be sent with the post request
     if (picture != null) {
