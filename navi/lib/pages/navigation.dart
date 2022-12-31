@@ -21,6 +21,7 @@ class _NavigationState extends State<Navigation> {
   File? pictureFile;
   late bool continue_giving_description;
   late List objects_with_positions;
+  var test;
 
   // initstate runs everytime the widget gets created
   // but it doesn't run when it is updated.
@@ -45,7 +46,7 @@ class _NavigationState extends State<Navigation> {
     // this variable will stay as true as long as the user doesn't wish to stop
     // navigation. however, initially, it is false until the user clicks start navigation button
     continue_giving_description = false;
-
+    test = 0;
     // this will be updated based on the return value of server that is performing
     // scene description.
     objects_with_positions = [[], [], []];
@@ -120,6 +121,7 @@ class _NavigationState extends State<Navigation> {
                     color: Colors.black,
                   ))
             ]),
+
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -128,9 +130,9 @@ class _NavigationState extends State<Navigation> {
                 onPressed: () async {
                   var scene;
 
-                  setState(() {
-                    continue_giving_description = true;
-                  });
+                  //setState(() {
+                  continue_giving_description = true;
+                  //});
 
                   // continue making API calls to make object detection, distance
                   // and angle estimation
@@ -140,13 +142,18 @@ class _NavigationState extends State<Navigation> {
                       scene = await handle_scene_description();
                     });
 
-                    // check if the server responded without an error
-                    if (scene[0][0] != -222) {
+                    // no objects detected and no server error
+                    if (scene[0].isEmpty) {
+                      continue;
+                    }
+                    // objects detected and no server error
+                    else if (scene[0][0] != -222) {
                       // use setState so that the widget gets rerendered to display
                       // the objects, distances, and angles
                       setState(() {
                         objects_with_positions = scene;
                       });
+                      // server error
                     } else {
                       // show an alert to the user since the server is irresponsive and can't detect objects
                       showDialog<String>(
@@ -222,7 +229,7 @@ class _NavigationState extends State<Navigation> {
 
     // If you want to send images/videos/files to the server, use MultipartRequest
     var request = http.MultipartRequest(
-        'POST', Uri.parse('http://10.0.2.2:5000/predict'));
+        'POST', Uri.parse('http://10.143.11.150:5000/predict'));
 
     // adding the image file
     request.files.add(multipart);
@@ -232,7 +239,7 @@ class _NavigationState extends State<Navigation> {
     try {
       // send the api request for object detection
       var streamedResponse =
-          await request.send().timeout(const Duration(seconds: 10));
+          await request.send().timeout(const Duration(seconds: 30));
       // converting the streamed response to a casual response
       var response = await http.Response.fromStream(streamedResponse);
       var response_decoded = json.decode(response.body);

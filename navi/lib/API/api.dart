@@ -8,7 +8,7 @@ class CallApi {
   // the local machine is the emulator since we are in that
   // currently but we are trying to access
   // to our laptop as the machine.
-  final String url = 'http://10.0.2.2:5000/';
+  final String url = 'http://10.143.11.150:3000/';
 
   // used to set the headers
   setHeaders() => {
