@@ -108,6 +108,9 @@ class _NavigationState extends State<Navigation> {
                 // start again.
                 onPressed: () {
                   continue_giving_description = false;
+                  // let the user know that the navigation has been stopped.
+                  var message = "Navigation has been stopped!";
+                  alertPopUp(message);
                 },
                 // the server will stop getting api requests
                 child: const Text('Stop Navigation',
@@ -123,22 +126,17 @@ class _NavigationState extends State<Navigation> {
         ])));
   }
 
-  // show an alert to the user when the server is irresponsive and can't detect objects
-  void handle_server_going_down() {
+  // show an alert to the user based on the message
+  void alertPopUp(message) {
     showDialog<String>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Alert'),
-        content: const Text(
-            'Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.'),
+        content: Text(message),
         actions: <Widget>[
           TextButton(
             onPressed: () async {
               Navigator.pop(context, 'OK');
-
-              setState(() {
-                continue_giving_description = false;
-              });
             },
             child: const Text('OK'),
           ),
@@ -174,7 +172,14 @@ class _NavigationState extends State<Navigation> {
         // server error
       } else {
         // show an alert to the user since the server is irresponsive and can't detect objects
-        handle_server_going_down();
+        var message =
+            "Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.";
+        alertPopUp(message);
+        // assign false to continue_giving_description so that api requests are stop
+        // being sent to the server since it is down.
+        setState(() {
+          continue_giving_description = false;
+        });
       }
     }
   }
