@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:navi/custom_widgets/ObjectDistancePositionHeader.dart';
+import 'package:navi/custom_widgets/displayFrameInformation.dart';
 import 'package:navi/main.dart';
 import 'package:path/path.dart' as Path;
 
@@ -78,32 +79,12 @@ class _NavigationState extends State<Navigation> {
         body: Center(
             child: Column(children: [
           const SizedBox(height: 30),
+          // display the headers for frame/scene description
           const ObjectDistancePositionHeader(),
           const SizedBox(height: 25),
 
           // to display all the detected objects, distances, and positions by the server (ml model)
-          for (var i = 0; i < (objects_with_positions[0]).length; i++)
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              Text(objects_with_positions[0][i],
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  )),
-              Text((objects_with_positions[1][i].toStringAsFixed(2)),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  )),
-              Text((objects_with_positions[2][i]).toString(),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  ))
-            ]),
-
+          FrameInformation(sceneDescription: [objects_with_positions]),
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
