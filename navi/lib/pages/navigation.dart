@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:navi/custom_widgets/ObjectDistancePositionHeader.dart';
 import 'package:navi/main.dart';
 import 'package:path/path.dart' as Path;
 
@@ -77,30 +78,7 @@ class _NavigationState extends State<Navigation> {
         body: Center(
             child: Column(children: [
           const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            // headers for listing detected objects, distances, and positions
-            children: const [
-              Text('Object',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.purple,
-                  )),
-              Text('Distance',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.purple,
-                  )),
-              Text('Position',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.purple,
-                  )),
-            ],
-          ),
+          const ObjectDistancePositionHeader(),
           const SizedBox(height: 25),
 
           // to display all the detected objects, distances, and positions by the server (ml model)
@@ -164,6 +142,30 @@ class _NavigationState extends State<Navigation> {
         ])));
   }
 
+  // show an alert to the user when the server is irresponsive and can't detect objects
+  void handle_server_going_down() {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Alert'),
+        content: const Text(
+            'Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context, 'OK');
+
+              setState(() {
+                continue_giving_description = false;
+              });
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // handle the program execution after the start navigation button is pressed
   startNavigation_button_pressed() async {
     var scene;
@@ -191,26 +193,7 @@ class _NavigationState extends State<Navigation> {
         // server error
       } else {
         // show an alert to the user since the server is irresponsive and can't detect objects
-        showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Alert'),
-            content: const Text(
-                'Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context, 'OK');
-
-                  setState(() {
-                    continue_giving_description = false;
-                  });
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+        handle_server_going_down();
       }
     }
   }
