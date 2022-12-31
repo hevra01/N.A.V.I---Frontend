@@ -84,7 +84,7 @@ class _NavigationState extends State<Navigation> {
           const SizedBox(height: 25),
 
           // to display all the detected objects, distances, and positions by the server (ml model)
-          FrameInformation(sceneDescription: [objects_with_positions]),
+          FrameInformation(sceneDescription: objects_with_positions),
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -106,16 +106,7 @@ class _NavigationState extends State<Navigation> {
                 // set the state of continue_giving_description to false
                 // so that we don't make API calls anymore unless the user wants to
                 // start again.
-                onPressed: () {
-                  continue_giving_description = false;
-                  // clean up the screen
-                  setState(() {
-                    objects_with_positions = [[], [], []];
-                  });
-                  // let the user know that the navigation has been stopped.
-                  var message = "Navigation has been stopped!";
-                  alertPopUp(message);
-                },
+                onPressed: stopNavigation_button_pressed,
                 // the server will stop getting api requests
                 child: const Text('Stop Navigation',
                     style: TextStyle(
@@ -126,7 +117,7 @@ class _NavigationState extends State<Navigation> {
               ),
             ],
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 20),
         ])));
   }
 
@@ -147,6 +138,18 @@ class _NavigationState extends State<Navigation> {
         ],
       ),
     );
+  }
+
+  // handle the program execution after the stop navigation button is pressed
+  stopNavigation_button_pressed() async {
+    continue_giving_description = false;
+    // clean up the screen
+    setState(() {
+      objects_with_positions = [[], [], []];
+    });
+    // let the user know that the navigation has been stopped.
+    var message = "Navigation has been stopped!";
+    alertPopUp(message);
   }
 
   // handle the program execution after the start navigation button is pressed
