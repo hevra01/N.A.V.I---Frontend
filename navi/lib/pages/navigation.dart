@@ -154,7 +154,7 @@ class _NavigationState extends State<Navigation> {
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Weather Data'),
-        content: Text("The temperature is $temperature"),
+        content: Text("The temperature is $temperature degrees Celsius"),
         actions: <Widget>[
           TextButton(
             onPressed: () async {
@@ -186,7 +186,7 @@ class _NavigationState extends State<Navigation> {
 
     // before we start informing about the detected objects,
     // we will let the user know about the weather
-    weatherPopUp();
+    await weatherPopUp();
 
     // continue making API calls to make object detection, distance
     // and angle estimation

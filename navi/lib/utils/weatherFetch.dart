@@ -15,6 +15,8 @@ Future<LocationHelper?> getLocationData() async {
 // this function will be used to get the weather based on the user location
 Future<WeatherData> getWeatherData(LocationHelper? locationData) async {
   WeatherData weatherData = WeatherData(locationData!);
+  // this will initialize the currentTemperature attribute
+  await weatherData.getCurrentTempurature();
 
   return weatherData;
 }
