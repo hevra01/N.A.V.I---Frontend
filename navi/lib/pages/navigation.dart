@@ -9,6 +9,10 @@ import 'package:navi/custom_widgets/displayFrameInformation.dart';
 import 'package:navi/main.dart';
 import 'package:path/path.dart' as Path;
 
+import '../utils/location.dart';
+import '../utils/weather.dart';
+import '../utils/weatherFetch.dart';
+
 class Navigation extends StatefulWidget {
   const Navigation({Key? key}) : super(key: key);
 
@@ -140,6 +144,29 @@ class _NavigationState extends State<Navigation> {
     );
   }
 
+  // used to show the weather data
+  Future<void> weatherPopUp() async {
+    Future<LocationHelper?> locationData = getLocationData();
+    Future<WeatherData> weatherData = getWeatherData(await locationData);
+    int temperature = (await weatherData).currentTempurature.round();
+
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Weather Data'),
+        content: Text("The temperature is $temperature"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context, 'OK');
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // handle the program execution after the stop navigation button is pressed
   stopNavigation_button_pressed() async {
     continue_giving_description = false;
@@ -156,6 +183,10 @@ class _NavigationState extends State<Navigation> {
   startNavigation_button_pressed() async {
     var scene;
     continue_giving_description = true;
+
+    // before we start informing about the detected objects,
+    // we will let the user know about the weather
+    weatherPopUp();
 
     // continue making API calls to make object detection, distance
     // and angle estimation

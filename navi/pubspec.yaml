@@ -41,6 +41,8 @@ dependencies:
   path: 
   file_picker: ^5.2.4
   smooth_page_indicator: ^1.0.0+2
+  location: ^4.4.0
+  font_awesome_flutter: ^10.3.0
 
 dev_dependencies:
   flutter_test:
