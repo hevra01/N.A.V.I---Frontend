@@ -112,7 +112,7 @@ class _NavigationState extends State<Navigation> {
                 // start again.
                 onPressed: stopNavigation_button_pressed,
                 // the server will stop getting api requests
-                child: const Text('Durdur hevra',
+                child: const Text('Stop Navigation',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
