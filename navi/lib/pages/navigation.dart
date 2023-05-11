@@ -8,6 +8,7 @@ import 'package:navi/custom_widgets/ObjectDistancePositionHeader.dart';
 import 'package:navi/custom_widgets/displayFrameInformation.dart';
 import 'package:navi/main.dart';
 import 'package:path/path.dart' as Path;
+import 'package:flutter_test/flutter_test.dart';
 
 import '../utils/location.dart';
 import '../utils/weather.dart';
@@ -126,6 +127,7 @@ class _NavigationState extends State<Navigation> {
   }
 
   // show an alert to the user based on the message
+
   void alertPopUp(message) {
     showDialog<String>(
       context: context,
@@ -143,6 +145,12 @@ class _NavigationState extends State<Navigation> {
       ),
     );
   }
+
+
+
+
+
+
 
   // used to show the weather data
   Future<void> weatherPopUp() async {
@@ -265,3 +273,13 @@ class _NavigationState extends State<Navigation> {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+

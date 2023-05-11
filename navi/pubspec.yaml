@@ -43,6 +43,7 @@ dependencies:
   smooth_page_indicator: ^1.0.0+2
   location: ^4.4.0
   font_awesome_flutter: ^10.3.0
+  mockito: ^5.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class OnBoardingScreen extends StatefulWidget {
   const OnBoardingScreen({super.key});
@@ -74,6 +75,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                 () => isLastPage = index == 2,
               );
             },
+
             children: [
               buildPage(
                   color: Colors.green.shade200,
@@ -85,14 +87,15 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   urlImage: 'assets/intro6.jpeg',
                   title: "What is N.A.V.I?",
                   subtitle:
-                      'Navigation Assistance for the Visually Impaired, is a mobile application aimed to assist visually impaired people in reaching their destination by avoiding any potential obstacles such as cars, trees, bicycles, etc'),
+                  'Navigation Assistance for the Visually Impaired, is a mobile application aimed to assist visually impaired people in reaching their destination by avoiding any potential obstacles such as cars, trees, bicycles, etc'),
               buildPage(
                   color: Colors.green.shade200,
                   urlImage: 'assets/intro7.jpeg',
                   title: "How to Use?",
                   subtitle:
-                      'When using the app, the user needs to hold their phones on chest level and allow the app to access the camera.'),
+                  'When using the app, the user needs to hold their phones on chest level and allow the app to access the camera.'),
             ],
+
           ),
         ),
         bottomSheet: isLastPage
@@ -148,3 +151,5 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
               ),
       );
 }
+
+
