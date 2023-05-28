@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:flutter/semantics.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,7 @@ class _NavigationState extends State<Navigation> {
             child: Column(children: [
           const SizedBox(height: 30),
           // display the headers for frame/scene description
-          const ObjectDistancePositionHeader(),
+          //const ObjectDistancePositionHeader(),
           const SizedBox(height: 25),
 
           // to display all the detected objects, distances, and positions by the server (ml model)
@@ -93,32 +94,26 @@ class _NavigationState extends State<Navigation> {
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            // holds the start navigation and stop navigation buttons
+            // holds the start/stop navigation button
             children: [
               ElevatedButton(
-                // api requests will continue to be sent to the server hosting
-                // an ml model to perform object detection and will continue
-                // until the user wishes to stop by clicking stop navigation button
-                onPressed: startNavigation_button_pressed,
-                child: const Text('Start Navigation',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    )),
-              ),
-              ElevatedButton(
-                // set the state of continue_giving_description to false
-                // so that we don't make API calls anymore unless the user wants to
-                // start again.
-                onPressed: stopNavigation_button_pressed,
-                // the server will stop getting api requests
-                child: const Text('Stop Navigation',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    )),
+                onPressed: () {
+                  if (continue_giving_description) {
+                    stopNavigation_button_pressed();
+                  } else {
+                    startNavigation_button_pressed();
+                  }
+                },
+                child: Text(
+                  continue_giving_description
+                      ? 'Stop Navigation'
+                      : 'Start Navigation',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),
@@ -126,53 +121,14 @@ class _NavigationState extends State<Navigation> {
         ])));
   }
 
-  // show an alert to the user based on the message
-
-  void alertPopUp(message) {
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Alert'),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context, 'OK');
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-
-
-
-
   // used to show the weather data
   Future<void> weatherPopUp() async {
     Future<LocationHelper?> locationData = getLocationData();
     Future<WeatherData> weatherData = getWeatherData(await locationData);
     int temperature = (await weatherData).currentTempurature.round();
 
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Weather Data'),
-        content: Text("The temperature is $temperature degrees Celsius"),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context, 'OK');
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    String message = "The temperature is $temperature degrees Celsius";
+    SemanticsService.announce(message, TextDirection.ltr);
   }
 
   // handle the program execution after the stop navigation button is pressed
@@ -184,7 +140,7 @@ class _NavigationState extends State<Navigation> {
     });
     // let the user know that the navigation has been stopped.
     var message = "Navigation has been stopped!";
-    alertPopUp(message);
+    SemanticsService.announce(message, TextDirection.ltr);
   }
 
   // handle the program execution after the start navigation button is pressed
@@ -220,7 +176,7 @@ class _NavigationState extends State<Navigation> {
         // show an alert to the user since the server is irresponsive and can't detect objects
         var message =
             "Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.";
-        alertPopUp(message);
+        SemanticsService.announce(message, TextDirection.ltr);
         // assign false to continue_giving_description so that api requests are stop
         // being sent to the server since it is down.
         setState(() {
@@ -273,13 +229,3 @@ class _NavigationState extends State<Navigation> {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
