@@ -3,12 +3,9 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/semantics.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:navi/custom_widgets/ObjectDistancePositionHeader.dart';
 import 'package:navi/custom_widgets/displayFrameInformation.dart';
 import 'package:navi/main.dart';
-import 'package:path/path.dart' as Path;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../utils/location.dart';
@@ -34,6 +31,8 @@ class _NavigationState extends State<Navigation> {
   // assigned to this variable
   late List objects_with_positions;
 
+  String elevatedButtonText = 'Start Navigation';
+
   // initstate runs everytime the widget gets created
   // but it doesn't run when it is updated.
   @override
@@ -58,6 +57,8 @@ class _NavigationState extends State<Navigation> {
     // this variable will stay as true as long as the user doesn't wish to stop
     // navigation. however, initially, it is false until the user clicks start navigation button
     continue_giving_description = false;
+
+
 
     // this will be updated based on the return value of server that is performing
     // scene description.
@@ -100,14 +101,17 @@ class _NavigationState extends State<Navigation> {
                 onPressed: () {
                   if (continue_giving_description) {
                     stopNavigation_button_pressed();
+                    setState(() {
+                      elevatedButtonText = "Start Navigation";
+                    });
                   } else {
                     startNavigation_button_pressed();
+                    setState(() {
+                      elevatedButtonText = "Stop Navigation";
+                    });
                   }
                 },
-                child: Text(
-                  continue_giving_description
-                      ? 'Stop Navigation'
-                      : 'Start Navigation',
+                child: Text('$elevatedButtonText',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -205,7 +209,7 @@ class _NavigationState extends State<Navigation> {
 
     // If you want to send images/videos/files to the server, use MultipartRequest
     var request = http.MultipartRequest(
-        'POST', Uri.parse('http://10.143.11.150:5000/predict'));
+        'POST', Uri.parse('http://10.0.2.2:5000/predict'));
 
     // adding the image file
     request.files.add(multipart);
