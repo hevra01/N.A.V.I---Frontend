@@ -46,6 +46,7 @@ dependencies:
   mockito: ^5.0.0
   flutter_tts: ^3.6.3
   shared_preferences: ^2.1.1
+  flutter_image_compress: ^2.0.0
 
 dev_dependencies:
   flutter_test:

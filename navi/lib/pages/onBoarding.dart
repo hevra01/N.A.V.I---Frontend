@@ -30,7 +30,7 @@ class OnBoardingScreen extends StatelessWidget {
           children: [
             const Text(
               "N.A.V.I. Introduction",
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 24),
               textAlign: TextAlign.center,
             ),
             ElevatedButton(

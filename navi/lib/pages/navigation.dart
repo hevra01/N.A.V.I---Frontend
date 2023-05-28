@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/semantics.dart';
 import 'package:http/http.dart' as http;
@@ -7,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:navi/custom_widgets/displayFrameInformation.dart';
 import 'package:navi/main.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../utils/location.dart';
 import '../utils/weather.dart';
 import '../utils/weatherFetch.dart';
@@ -58,8 +59,6 @@ class _NavigationState extends State<Navigation> {
     // navigation. however, initially, it is false until the user clicks start navigation button
     continue_giving_description = false;
 
-
-
     // this will be updated based on the return value of server that is performing
     // scene description.
     objects_with_positions = [[], [], []];
@@ -85,19 +84,24 @@ class _NavigationState extends State<Navigation> {
             )),
         body: Center(
             child: Column(children: [
-          const SizedBox(height: 30),
-          // display the headers for frame/scene description
-          //const ObjectDistancePositionHeader(),
-          const SizedBox(height: 25),
-
           // to display all the detected objects, distances, and positions by the server (ml model)
           FrameInformation(sceneDescription: objects_with_positions),
-          const Spacer(),
+          const SizedBox(
+            width: 200, // Set the desired width
+            height: 400, // Set the desired height
+          ),
+          //const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
             // holds the start/stop navigation button
             children: [
               ElevatedButton(
+                style: ButtonStyle(
+                  fixedSize: MaterialStateProperty.all<Size>(
+                    const Size(240, 150), // Set the desired width and height
+                  ),
+                ),
                 onPressed: () {
                   if (continue_giving_description) {
                     stopNavigation_button_pressed();
@@ -111,9 +115,10 @@ class _NavigationState extends State<Navigation> {
                     });
                   }
                 },
-                child: Text('$elevatedButtonText',
+                child: Text(
+                  elevatedButtonText,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 25,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),
@@ -160,7 +165,7 @@ class _NavigationState extends State<Navigation> {
     // and angle estimation
     while (continue_giving_description) {
       // make API requests every 5 seconds
-      await Future.delayed(const Duration(seconds: 1), () async {
+      await Future.delayed(const Duration(seconds: 6), () async {
         scene = await handle_scene_description();
       });
 
@@ -190,6 +195,22 @@ class _NavigationState extends State<Navigation> {
     }
   }
 
+  // this function will be used to compress the image before sending it to the backend.
+  Future<File> compressFile(XFile file) async {
+    Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
+      file.path,
+      minWidth: 800,
+      minHeight: 600,
+      quality: 94,
+    );
+
+    String compressedFilePath = '${file.path}_compressed.jpg';
+    File compressedFile = File(compressedFilePath);
+    await compressedFile.writeAsBytes(compressedBytes!);
+
+    return compressedFile;
+  }
+
   // this function will take a picture and make an API call to the server hosting
   // an ml model that makes object detection distance and position calculation.
   handle_scene_description() async {
@@ -200,6 +221,7 @@ class _NavigationState extends State<Navigation> {
     // get the requirments ready to create a multipart file to be sent with the post request
     if (picture != null) {
       pictureFile = File(picture.path);
+      pictureFile = await compressFile(picture);
       stream = http.ByteStream(pictureFile!.openRead());
       stream.cast();
     }
@@ -209,7 +231,7 @@ class _NavigationState extends State<Navigation> {
 
     // If you want to send images/videos/files to the server, use MultipartRequest
     var request = http.MultipartRequest(
-        'POST', Uri.parse('http://10.0.2.2:5000/predict'));
+        'POST', Uri.parse('http://10.144.141.1:5000/predict'));
 
     // adding the image file
     request.files.add(multipart);
@@ -219,7 +241,7 @@ class _NavigationState extends State<Navigation> {
     try {
       // send the api request for object detection
       var streamedResponse =
-          await request.send().timeout(const Duration(seconds: 30));
+          await request.send().timeout(const Duration(seconds: 5));
       // converting the streamed response to a casual response
       var response = await http.Response.fromStream(streamedResponse);
       var response_decoded = json.decode(response.body);
