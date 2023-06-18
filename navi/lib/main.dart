@@ -13,45 +13,44 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  bool showOnBoarding = false;
-
-  @override
-  void initState() {
-    super.initState();
-    checkOnBoardingStatus();
-  }
-
-  Future<void> checkOnBoardingStatus() async {
+class MyApp extends StatelessWidget {
+  Future<bool> checkOnBoardingStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool onBoardingShown = prefs.getBool('onBoardingShown') ?? false;
-
-    setState(() {
-      showOnBoarding = !onBoardingShown;
-    });
-  }
-
-  void onBoardingComplete() {
-    setState(() {
-      showOnBoarding = false;
-    });
+    return !onBoardingShown;
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: showOnBoarding ? '/onboarding' : '/navigate',
-      routes: {
-        '/onboarding': (context) => OnBoardingScreen(
-              onBoardingComplete: onBoardingComplete,
-            ),
-        '/navigate': (context) => const Navigation(),
+    return FutureBuilder<bool>(
+      future: checkOnBoardingStatus(),
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show a loading indicator while the future is being resolved
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          // Show an error message if the future fails
+          return Text('Error: ${snapshot.error}');
+        } else {
+          // Retrieve the value of showOnBoarding from the snapshot
+          bool showOnBoarding = snapshot.data ?? false;
+
+          return MaterialApp(
+            initialRoute: showOnBoarding ? '/onboarding' : '/navigate',
+            routes: {
+              '/onboarding': (context) => OnBoardingScreen(
+                onBoardingComplete: () {
+                  SharedPreferences.getInstance().then((prefs) {
+                    prefs.setBool('onBoardingShown', true);
+                  });
+                },
+              ),
+              '/navigate': (context) => const Navigation(),
+            },
+          );
+        }
       },
     );
   }
 }
+
