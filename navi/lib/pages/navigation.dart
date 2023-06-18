@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
+import 'package:flutter/semantics.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:navi/custom_widgets/ObjectDistancePositionHeader.dart';
 import 'package:navi/custom_widgets/displayFrameInformation.dart';
 import 'package:navi/main.dart';
-import 'package:path/path.dart' as Path;
-
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../utils/location.dart';
 import '../utils/weather.dart';
 import '../utils/weatherFetch.dart';
@@ -31,6 +31,8 @@ class _NavigationState extends State<Navigation> {
   // after the server detects objects, distances, and positions, it will be
   // assigned to this variable
   late List objects_with_positions;
+
+  String elevatedButtonText = 'Start Navigation';
 
   // initstate runs everytime the widget gets created
   // but it doesn't run when it is updated.
@@ -82,66 +84,50 @@ class _NavigationState extends State<Navigation> {
             )),
         body: Center(
             child: Column(children: [
-          const SizedBox(height: 30),
-          // display the headers for frame/scene description
-          const ObjectDistancePositionHeader(),
-          const SizedBox(height: 25),
-
           // to display all the detected objects, distances, and positions by the server (ml model)
           FrameInformation(sceneDescription: objects_with_positions),
-          const Spacer(),
+          const SizedBox(
+            width: 200, // Set the desired width
+            height: 400, // Set the desired height
+          ),
+          //const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            // holds the start navigation and stop navigation buttons
+
+            // holds the start/stop navigation button
             children: [
               ElevatedButton(
-                // api requests will continue to be sent to the server hosting
-                // an ml model to perform object detection and will continue
-                // until the user wishes to stop by clicking stop navigation button
-                onPressed: startNavigation_button_pressed,
-                child: const Text('Start Navigation',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    )),
-              ),
-              ElevatedButton(
-                // set the state of continue_giving_description to false
-                // so that we don't make API calls anymore unless the user wants to
-                // start again.
-                onPressed: stopNavigation_button_pressed,
-                // the server will stop getting api requests
-                child: const Text('Stop Navigation',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    )),
+                style: ButtonStyle(
+                  fixedSize: MaterialStateProperty.all<Size>(
+                    const Size(240, 150), // Set the desired width and height
+                  ),
+                ),
+                onPressed: () {
+                  if (continue_giving_description) {
+                    stopNavigation_button_pressed();
+                    setState(() {
+                      elevatedButtonText = "Start Navigation";
+                    });
+                  } else {
+                    startNavigation_button_pressed();
+                    setState(() {
+                      elevatedButtonText = "Stop Navigation";
+                    });
+                  }
+                },
+                child: Text(
+                  elevatedButtonText,
+                  style: const TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 20),
         ])));
-  }
-
-  // show an alert to the user based on the message
-  void alertPopUp(message) {
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Alert'),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context, 'OK');
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   // used to show the weather data
@@ -150,21 +136,8 @@ class _NavigationState extends State<Navigation> {
     Future<WeatherData> weatherData = getWeatherData(await locationData);
     int temperature = (await weatherData).currentTempurature.round();
 
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Weather Data'),
-        content: Text("The temperature is $temperature degrees Celsius"),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context, 'OK');
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    String message = "The temperature is $temperature degrees Celsius";
+    SemanticsService.announce(message, TextDirection.ltr);
   }
 
   // handle the program execution after the stop navigation button is pressed
@@ -176,7 +149,7 @@ class _NavigationState extends State<Navigation> {
     });
     // let the user know that the navigation has been stopped.
     var message = "Navigation has been stopped!";
-    alertPopUp(message);
+    SemanticsService.announce(message, TextDirection.ltr);
   }
 
   // handle the program execution after the start navigation button is pressed
@@ -192,7 +165,7 @@ class _NavigationState extends State<Navigation> {
     // and angle estimation
     while (continue_giving_description) {
       // make API requests every 5 seconds
-      await Future.delayed(const Duration(seconds: 1), () async {
+      await Future.delayed(const Duration(seconds: 6), () async {
         scene = await handle_scene_description();
       });
 
@@ -212,7 +185,7 @@ class _NavigationState extends State<Navigation> {
         // show an alert to the user since the server is irresponsive and can't detect objects
         var message =
             "Currently the app is unable to detect objects. \nConsequently, please take cautions accordingly and try again later.";
-        alertPopUp(message);
+        SemanticsService.announce(message, TextDirection.ltr);
         // assign false to continue_giving_description so that api requests are stop
         // being sent to the server since it is down.
         setState(() {
@@ -220,6 +193,22 @@ class _NavigationState extends State<Navigation> {
         });
       }
     }
+  }
+
+  // this function will be used to compress the image before sending it to the backend.
+  Future<File> compressFile(XFile file) async {
+    Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
+      file.path,
+      minWidth: 800,
+      minHeight: 600,
+      quality: 94,
+    );
+
+    String compressedFilePath = '${file.path}_compressed.jpg';
+    File compressedFile = File(compressedFilePath);
+    await compressedFile.writeAsBytes(compressedBytes!);
+
+    return compressedFile;
   }
 
   // this function will take a picture and make an API call to the server hosting
@@ -232,6 +221,7 @@ class _NavigationState extends State<Navigation> {
     // get the requirments ready to create a multipart file to be sent with the post request
     if (picture != null) {
       pictureFile = File(picture.path);
+      pictureFile = await compressFile(picture);
       stream = http.ByteStream(pictureFile!.openRead());
       stream.cast();
     }
@@ -241,7 +231,7 @@ class _NavigationState extends State<Navigation> {
 
     // If you want to send images/videos/files to the server, use MultipartRequest
     var request = http.MultipartRequest(
-        'POST', Uri.parse('http://10.143.11.150:5000/predict'));
+        'POST', Uri.parse('http://10.144.141.1:5000/predict'));
 
     // adding the image file
     request.files.add(multipart);
@@ -251,7 +241,7 @@ class _NavigationState extends State<Navigation> {
     try {
       // send the api request for object detection
       var streamedResponse =
-          await request.send().timeout(const Duration(seconds: 30));
+          await request.send().timeout(const Duration(seconds: 5));
       // converting the streamed response to a casual response
       var response = await http.Response.fromStream(streamedResponse);
       var response_decoded = json.decode(response.body);
